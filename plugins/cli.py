@@ -9,6 +9,7 @@ if __name__ == '__main__':
                             description="Generates JLCPCB production files from a KiCAD board file")
 
     parser.add_argument("--path",               "-p",  type=str, help="Path to KiCAD board file", required=True)
+    parser.add_argument("--variant",                   type=str, help="Name of the board variant to generate (KiCad 10+)", metavar="NAME")
     parser.add_argument("--additionalLayers",   "-aL", type=str, help="Additional layers(comma-separated)", metavar="LAYERS")
     parser.add_argument("--user1VCut",          "-u1", action="store_true", help="Set User.1 as V-Cut layer")
     parser.add_argument("--user2AltVCut",       "-u2", action="store_true", help="Set User.2 as alternative Edge-Cut layer")
@@ -39,4 +40,4 @@ if __name__ == '__main__':
 
     path = args.path
 
-    ProcessThread(wx=None, cli=path, options=options, openBrowser=openBrowser, nonInteractive=nonInteractive)
+    ProcessThread(wx=None, cli=path, options=options, openBrowser=openBrowser, nonInteractive=nonInteractive, variant=args.variant)

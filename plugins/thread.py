@@ -15,7 +15,7 @@ from .utils import print_cli_progress_bar
 
 
 class ProcessThread(Thread):
-    def __init__(self, wx, options, cli = None, openBrowser = True, nonInteractive = False):
+    def __init__(self, wx, options, cli = None, openBrowser = True, nonInteractive = False, variant = None):
         Thread.__init__(self)
 
         # prevent use of cli and graphical mode at the same time
@@ -29,6 +29,12 @@ class ProcessThread(Thread):
             except Exception as e:
                 logging.error("Fabrication Toolkit - Error" + str(e))
                 return
+            if variant:
+                if self.board is None:
+                    logging.error("Fabrication Toolkit - Failed to load board file: %s" % cli)
+                    return
+                if not self._set_variant(variant):
+                    return
         else:
             self.board = None
             
@@ -39,6 +45,22 @@ class ProcessThread(Thread):
         self.openBrowser = openBrowser
         self.nonInteractive = nonInteractive
         self.start()
+
+    def _set_variant(self, variant):
+        '''Select the board variant used for processing, validating the name first.'''
+        if not hasattr(self.board, 'SetCurrentVariant'):
+            logging.error("Fabrication Toolkit - Variants require KiCad 10 or newer")
+            return False
+
+        if not self.board.HasVariant(variant):
+            # The first entry returned for the UI is the default variant.
+            names = list(self.board.GetVariantNamesForUI())[1:]
+            logging.error("Fabrication Toolkit - Variant '%s' not found. Available variants: %s"
+                          % (variant, ", ".join(names) if names else "none"))
+            return False
+
+        self.board.SetCurrentVariant(variant)
+        return True
 
     def expandTextVariables(self, string):
         board = self.board if self.board is not None else pcbnew.GetBoard()
